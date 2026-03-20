@@ -1,0 +1,24 @@
+placeholders:
+  nightvision_toggle:
+    type: boolean
+    default: false
+    true-format: '&aON'
+    false-format: '&cOFF'
+
+  chat_toggle:
+    type: boolean
+    default: true
+    true-format: '&aENABLED'
+    false-format: '&cDISABLED'
+
+  coins_boost:
+    type: integer
+    default: 0
+
+  rank_name:
+    type: string
+    default: 'Member'
+
+  multiplier:
+    type: double
+    default: 1.0

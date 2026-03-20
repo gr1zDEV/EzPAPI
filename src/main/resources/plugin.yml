@@ -1,0 +1,38 @@
+name: EZPAPI
+main: dev.ezpapi.EZPAPIPlugin
+version: ${version}
+api-version: '1.21'
+folia-supported: true
+softdepend:
+  - PlaceholderAPI
+  - floodgate
+commands:
+  ezpapi:
+    description: Admin backend command for EZPAPI player variables.
+    usage: /<command> <set|get|toggle|reset|reload>
+    permission: ezpapi.admin
+permissions:
+  ezpapi.admin:
+    description: Full access to every EZPAPI backend command.
+    default: op
+    children:
+      ezpapi.set: true
+      ezpapi.get: true
+      ezpapi.toggle: true
+      ezpapi.reset: true
+      ezpapi.reload: true
+  ezpapi.set:
+    description: Allows setting configured player variables.
+    default: false
+  ezpapi.get:
+    description: Allows viewing configured player variables.
+    default: false
+  ezpapi.toggle:
+    description: Allows toggling configured boolean variables.
+    default: false
+  ezpapi.reset:
+    description: Allows resetting configured player variables to defaults.
+    default: false
+  ezpapi.reload:
+    description: Allows reloading EZPAPI configuration and messages.
+    default: false
