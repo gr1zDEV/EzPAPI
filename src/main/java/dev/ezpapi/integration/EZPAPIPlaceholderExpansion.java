@@ -8,7 +8,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
 public final class EZPAPIPlaceholderExpansion extends PlaceholderExpansion {
+    private static final String FORMATTED_SUFFIX = "_formatted";
+
     private final EZPAPIPlugin plugin;
 
     public EZPAPIPlaceholderExpansion(EZPAPIPlugin plugin) {
@@ -22,7 +28,8 @@ public final class EZPAPIPlaceholderExpansion extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getAuthor() {
-        return String.join(", ", plugin.getDescription().getAuthors().isEmpty() ? java.util.List.of("OpenAI") : plugin.getDescription().getAuthors());
+        List<String> authors = plugin.getDescription().getAuthors();
+        return authors.isEmpty() ? "OpenAI" : String.join(", ", authors);
     }
 
     @Override
@@ -36,34 +43,42 @@ public final class EZPAPIPlaceholderExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public boolean canRegister() {
-        return true;
+    public @Nullable String onRequest(OfflinePlayer player, @NotNull String identifier) {
+        return resolvePlaceholder(player, identifier);
     }
 
     @Override
-    public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String params) {
-        if (params.equalsIgnoreCase("is_bedrock")) {
-            Player player = offlinePlayer != null ? offlinePlayer.getPlayer() : null;
-            return String.valueOf(plugin.getFloodgateHook().isBedrockPlayer(player));
+    public @Nullable String onPlaceholderRequest(Player player, @NotNull String identifier) {
+        return resolvePlaceholder(player, identifier);
+    }
+
+    public @Nullable String resolvePlaceholder(@Nullable OfflinePlayer player, @NotNull String identifier) {
+        if (identifier.equalsIgnoreCase("is_bedrock")) {
+            Player onlinePlayer = player != null ? player.getPlayer() : null;
+            return String.valueOf(plugin.getFloodgateHook().isBedrockPlayer(onlinePlayer));
         }
 
-        if (params.equalsIgnoreCase("platform")) {
-            Player player = offlinePlayer != null ? offlinePlayer.getPlayer() : null;
-            return plugin.getFloodgateHook().getPlatform(player);
+        if (identifier.equalsIgnoreCase("platform")) {
+            Player onlinePlayer = player != null ? player.getPlayer() : null;
+            return plugin.getFloodgateHook().getPlatform(onlinePlayer);
         }
 
-        boolean formatted = params.toLowerCase(java.util.Locale.ROOT).endsWith("_formatted");
-        String key = formatted ? params.substring(0, params.length() - "_formatted".length()) : params;
+        boolean formatted = identifier.toLowerCase(Locale.ROOT).endsWith(FORMATTED_SUFFIX);
+        String key = formatted ? identifier.substring(0, identifier.length() - FORMATTED_SUFFIX.length()) : identifier;
         PlaceholderDefinition definition = plugin.getConfigManager().getDefinition(key);
         if (definition == null) {
             return null;
         }
 
-        Object value = definition.defaultValue();
-        if (offlinePlayer != null && offlinePlayer.getUniqueId() != null) {
-            value = plugin.getPlayerDataManager().getValue(offlinePlayer.getUniqueId(), definition);
-        }
-
+        Object value = getResolvedValue(player, definition);
         return formatted ? plugin.getMessagesManager().colorize(definition.formatValue(value)) : String.valueOf(value);
+    }
+
+    private Object getResolvedValue(@Nullable OfflinePlayer player, PlaceholderDefinition definition) {
+        UUID uniqueId = player != null ? player.getUniqueId() : null;
+        if (uniqueId == null) {
+            return definition.defaultValue();
+        }
+        return plugin.getPlayerDataManager().getValue(uniqueId, definition);
     }
 }

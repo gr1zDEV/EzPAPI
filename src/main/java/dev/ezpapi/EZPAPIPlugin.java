@@ -23,7 +23,8 @@ public final class EZPAPIPlugin extends JavaPlugin {
         this.playerDataManager = new PlayerDataManager(this);
         this.floodgateHook = new FloodgateHook();
 
-        reloadPlugin();
+        loadPluginState();
+        registerPlaceholderExpansion();
         registerCommand();
 
         if (floodgateHook.isAvailable()) {
@@ -44,10 +45,14 @@ public final class EZPAPIPlugin extends JavaPlugin {
     }
 
     public void reloadPlugin() {
+        loadPluginState();
+        registerPlaceholderExpansion();
+    }
+
+    private void loadPluginState() {
         configManager.load();
         messagesManager.reload();
         playerDataManager.reload();
-        registerPlaceholderExpansion();
     }
 
     private void registerCommand() {
@@ -67,11 +72,14 @@ public final class EZPAPIPlugin extends JavaPlugin {
             return;
         }
 
-        if (placeholderExpansion != null) {
-            placeholderExpansion.unregister();
+        if (placeholderExpansion == null) {
+            placeholderExpansion = new EZPAPIPlaceholderExpansion(this);
         }
 
-        placeholderExpansion = new EZPAPIPlaceholderExpansion(this);
+        if (placeholderExpansion.isRegistered()) {
+            return;
+        }
+
         if (placeholderExpansion.register()) {
             getLogger().info("Registered EZPAPI PlaceholderAPI expansion.");
         } else {
