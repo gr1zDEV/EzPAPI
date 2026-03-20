@@ -22,6 +22,9 @@ EZPAPI is a Paper/Folia backend utility plugin that lets admins and console stor
 gradle build
 ```
 
+## Release automation
+Publishing a GitHub Release now triggers `.github/workflows/release-build.yml`, which checks out the release tag, builds the plugin with Java 21 + Gradle, uploads the generated JARs as workflow artifacts, and attaches them to the GitHub release automatically.
+
 ## Commands
 These commands are meant for admins, console, automation, and backend workflows.
 
