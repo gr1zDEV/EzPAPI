@@ -6,6 +6,8 @@ folia-supported: true
 softdepend:
   - PlaceholderAPI
   - floodgate
+libraries:
+  - org.xerial:sqlite-jdbc:3.46.1.3
 commands:
   ezpapi:
     description: Admin backend command for EZPAPI player variables.

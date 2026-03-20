@@ -83,7 +83,6 @@ public final class EZPAPICommand implements CommandExecutor, TabCompleter {
         }
 
         plugin.getPlayerDataManager().setValue(target.getUniqueId(), definition.key(), parseResult.value());
-        plugin.getPlayerDataManager().save();
         plugin.getMessagesManager().send(sender, "set-success", successPlaceholders(target, definition, parseResult.value()));
         return true;
     }
@@ -140,7 +139,6 @@ public final class EZPAPICommand implements CommandExecutor, TabCompleter {
         boolean current = (boolean) plugin.getPlayerDataManager().getValue(target.getUniqueId(), definition);
         boolean updated = !current;
         plugin.getPlayerDataManager().setValue(target.getUniqueId(), definition.key(), updated);
-        plugin.getPlayerDataManager().save();
         plugin.getMessagesManager().send(sender, "toggle-success", successPlaceholders(target, definition, updated));
         return true;
     }
@@ -165,7 +163,6 @@ public final class EZPAPICommand implements CommandExecutor, TabCompleter {
         }
 
         plugin.getPlayerDataManager().resetValue(target.getUniqueId(), definition.key());
-        plugin.getPlayerDataManager().save();
         plugin.getMessagesManager().send(sender, "reset-success", successPlaceholders(target, definition, definition.defaultValue()));
         return true;
     }

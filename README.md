@@ -4,16 +4,18 @@ EZPAPI is a Paper/Folia backend utility plugin that lets admins and console stor
 
 ## Features
 - Config-defined placeholder schema with `boolean`, `integer`, `double`, and `string` types.
-- YAML-backed UUID storage for player overrides.
+- SQLite-backed UUID storage for player overrides in `plugins/EZPAPI/ezpapi.db`.
 - Admin/console-only `/ezpapi` command set for `set`, `get`, `toggle`, `reset`, and `reload`.
 - Built-in PlaceholderAPI expansion using `%ezpapi_<key>%` and `%ezpapi_<key>_formatted%`.
 - Optional Floodgate-aware placeholders: `%ezpapi_is_bedrock%` and `%ezpapi_platform%`.
 - Paper + Folia safe implementation with no unsafe scheduler usage.
+- One-time migration from legacy `players.yml` storage into SQLite.
 
 ## Dependencies
 - **Paper / Folia 1.21.x**
 - **PlaceholderAPI** is optional but recommended. If it is missing, the plugin still loads but does not register placeholders.
 - **Floodgate** is optional. If present, EZPAPI can detect Bedrock players for the optional platform placeholders.
+- **SQLite JDBC** is declared as a runtime library in `plugin.yml` and as a Gradle dependency for local builds.
 
 ## Build
 ```bash
@@ -68,13 +70,30 @@ placeholders:
 
 Rules:
 - Only keys defined in `config.yml` are valid.
-- Player overrides are stored separately in `players.yml`.
-- Resetting a value removes the override so the default applies again.
-- Reloading refreshes the placeholder schema and messages.
+- SQLite stores only player-specific overrides as text rows.
+- `config.yml` remains the source of truth for valid keys, types, formats, and defaults.
+- Resetting a value deletes the SQLite override so the default applies again.
+- Reloading refreshes the placeholder schema and messages without replacing the database file.
 
 ## Storage
-EZPAPI stores only explicit per-player overrides in `plugins/EZPAPI/players.yml`.
+EZPAPI stores only explicit per-player overrides in `plugins/EZPAPI/ezpapi.db`.
 Defaults stay in `config.yml`, so unset values always resolve from the schema instead of duplicating data into every player record.
+
+### SQLite schema
+EZPAPI creates the `player_variables` table on startup:
+
+- `player_uuid TEXT NOT NULL`
+- `variable_key TEXT NOT NULL`
+- `value TEXT NOT NULL`
+- `updated_at INTEGER NOT NULL`
+- `PRIMARY KEY (player_uuid, variable_key)`
+
+Values are stored as text in SQLite and parsed back into the configured placeholder type when read.
+
+### YAML migration
+If EZPAPI finds a legacy `players.yml` file on startup, it migrates each valid UUID/key override into SQLite one time.
+After a successful migration, the old file is renamed to `players.yml.migrated` and will not be migrated again.
+Unknown keys or invalid stored values are skipped with clear console warnings.
 
 ## Bedrock / Geyser / Floodgate compatibility
 - Player data is stored by UUID only.

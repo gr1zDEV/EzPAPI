@@ -34,7 +34,7 @@ public final class EZPAPIPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if (playerDataManager != null) {
-            playerDataManager.save();
+            playerDataManager.close();
         }
 
         if (placeholderExpansion != null) {
